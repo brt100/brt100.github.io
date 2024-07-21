@@ -104,7 +104,7 @@
       }
       (async () => {
         // Get GitHub repository file info
-        const response = await fetch('https://api.github.com/repos/brt100/');
+        const response = await fetch('https://api.github.com/repos/brt100/brt100.github.io/contents');
         const data = await response.json();
         // Initialize search fields and results
         const search_form = document.getElementById('search_form');
