@@ -34,7 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <h1>Markdown Files in Repository</h1>
+    <h1 id="main-header">Markdown Files in Repository</h1>
     <div id="list-container">
         <ul id="file-list"></ul>
     </div>
@@ -85,7 +85,7 @@
 
             if (filePath) {
                 document.getElementById('list-container').style.display = 'none';
-                document.querySelector('h1').innerText = filePath.replace(/.*\/|\.[^.]*$/g, ''); // Extract filename without extension
+                document.getElementById('main-header').innerHTML = '<a href="./">Go back to Homepage</a>';
                 fetchMarkdownContent(filePath);
             } else {
                 fetchMarkdownFiles();
