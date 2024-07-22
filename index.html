@@ -35,7 +35,9 @@
 </head>
 <body>
     <h1>Markdown Files in Repository</h1>
-    <ul id="file-list"></ul>
+    <div id="list-container">
+        <ul id="file-list"></ul>
+    </div>
     <div class="content" id="content"></div>
     <script>
         async function fetchMarkdownFiles() {
@@ -54,12 +56,6 @@
                         fileList.appendChild(listItem);
                     }
                 });
-
-                const urlParams = new URLSearchParams(window.location.search);
-                const filePath = urlParams.get('file');
-                if (filePath) {
-                    fetchMarkdownContent(filePath);
-                }
             } catch (error) {
                 console.error('Error fetching the markdown files:', error);
             }
@@ -80,7 +76,20 @@
             contentDiv.innerHTML = marked(content);
         }
 
-        fetchMarkdownFiles();
+        function initialize() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filePath = urlParams.get('file');
+
+            if (filePath) {
+                document.getElementById('list-container').style.display = 'none';
+                document.querySelector('h1').innerText = filePath.replace(/.*\/|\.[^.]*$/g, ''); // Extract filename without extension
+                fetchMarkdownContent(filePath);
+            } else {
+                fetchMarkdownFiles();
+            }
+        }
+
+        initialize();
     </script>
 </body>
 </html>
