@@ -26,11 +26,15 @@
         a:hover {
             text-decoration: underline;
         }
+        .content {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Markdown Files in Repository</h1>
     <ul id="file-list"></ul>
+    <div class="content" id="content"></div>
     <script>
         async function fetchMarkdownFiles() {
             try {
@@ -42,8 +46,12 @@
                     if (file.type === 'file' && file.name.endsWith('.md')) {
                         const listItem = document.createElement('li');
                         const link = document.createElement('a');
-                        link.href = file.html_url;
-                        link.textContent = file.name;
+                        link.href = "#";
+                        link.textContent = file.name.replace('.md', '');
+                        link.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            fetchMarkdownContent(file.path);
+                        });
                         listItem.appendChild(link);
                         fileList.appendChild(listItem);
                     }
@@ -51,6 +59,21 @@
             } catch (error) {
                 console.error('Error fetching the markdown files:', error);
             }
+        }
+
+        async function fetchMarkdownContent(filePath) {
+            try {
+                const response = await fetch(`https://raw.githubusercontent.com/brt100/brt100.github.io/main/${filePath}`);
+                const content = await response.text();
+                displayContent(content);
+            } catch (error) {
+                console.error('Error fetching the markdown content:', error);
+            }
+        }
+
+        function displayContent(content) {
+            const contentDiv = document.getElementById('content');
+            contentDiv.textContent = content;
         }
 
         fetchMarkdownFiles();
