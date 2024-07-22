@@ -75,7 +75,8 @@
 
         function displayContent(content) {
             const contentDiv = document.getElementById('content');
-            contentDiv.innerHTML = marked(content);
+            // Use the default export from marked
+            contentDiv.innerHTML = marked.parse(content);
         }
 
         function initialize() {
