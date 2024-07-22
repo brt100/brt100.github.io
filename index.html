@@ -1,154 +1,59 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>WikiMind</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Files in GitHub Repository</title>
     <style>
-      body {
-        color: #444;
-        font-size: 1.2em;
-        max-width: 30em;
-        margin: 0 auto;
-        line-height: 1.4;
-        padding: 0 1em;
-      }
-      textarea {
-        width: 100%;
-        font: 1em "Times New Roman";
-      }
-      a {
-        color: #4070a0;
-      }
-      blockquote {
-        font-family: monospace;
-        background: #EEE;
-        margin: 0;
-        padding: 1px 1em;
-      }
-      div#v {
-        background: #fdf5e6;
-        padding: 1em;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #4070a0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
+</head>
+<body>
+    <h1>Markdown Files in Repository</h1>
+    <ul id="file-list"></ul>
     <script>
-      const N = 'wiki'; // WikiMind 2022.04
-      const P = '$2y$12$c5Zq/0ggJcT.tbUpr3igaefZG0xy1WLkzTc/yx5YwrA4A1.ZF2UuO';
+        async function fetchMarkdownFiles() {
+            try {
+                const response = await fetch('https://api.github.com/repos/brt100/brt100.github.io/contents');
+                const data = await response.json();
 
-      function p(r) {
-        return /^<\/?(ul|ol|li|h|p|bl)/.test(r) ? `\n${r}\n` : `\n<p>${r}</p>\n`;
-      }
-
-      function u(r) {
-        return `\n<ul>\n\t<li>${r}</li>\n</ul>`;
-      }
-
-      function o(r) {
-        return `\n<ol>\n\t<li>${r}</li>\n</ol>`;
-      }
-
-      function q(r) {
-        return `\n<blockquote>${r}</blockquote>`;
-      }
-
-      function v(r) {
-        return `\n<div id=v>${r}</div>`;
-      }
-
-      function h(z, c, h) {
-        return `<a name="${h}"></a><h${c.length}>${h}</h${c.length}>`;
-      }
-
-      function r(t) {
-        t = `\n${t}\n`;
-        const l = [
-          { r: /\n(#+)(.*)/, s: h },
-          { r: /\n-{3,}/, s: "\n<hr/>" },
-          { r: /!\[([^\[]+)\]\(([^\)]+)\)/, s: "<img src='$2' alt='$1'>" },
-          { r: /\[([^\]]+)\]\(([^\)]+)\)/, s: "<a href='$2'>$1</a>" },
-          { r: /\[\[([^\]]+)\]\]/, s: "<a href='?$1'>$1</a>" },
-          { r: /(\*\*)(.*?)\1/, s: "<b>$2</b>" },
-          { r: /\n\*(.*)/, s: u },
-          { r: /\n\-(.*)/, s: u },
-          { r: /\n[0-9]+\.(.*)/, s: o },
-          { r: /(\*)(.*?)\1/, s: "<i>$2</i>" },
-          { r: /\n(&gt;|\>)(.*)/, s: q },
-          { r: /\n(&gt;|\!!!)(.*)/, s: v },
-          { r: /\n([^\n]+)\n/, s: p },
-          { r: /<\/ul>\s?<ul>/, s: '' },
-          { r: /<\/ol>\s?<ol>/, s: '' },
-          { r: /<\/blockquote><blockquote>/, s: "<br>" }
-        ];
-        l.forEach(({ r, s }) => {
-          t = t.replace(r, (match, ...args) => typeof s === 'function' ? s(...args) : s);
-        });
-        return t.trim();
-      }
-
-      function f(f) {
-        return localStorage.getItem(f) || '';
-      }
-
-      function e(p) {
-        const formHtml = `
-          </p>
-          <form onsubmit="return saveForm(event, '${p}')">
-            <textarea autofocus rows=15 name=c placeholder='Syntax: #title, *i*, **b**, * or 1. list, > quote, [[page]], [name](url), ![img](url), --- line, !!! note.'>${f(p)}</textarea>
-            <br>
-            <input type=password autocomplete=current-password name=P placeholder=pwd>
-            <input type=submit value=save accesskey=e>
-          </form>
-        `;
-        document.body.innerHTML += formHtml;
-      }
-
-      function saveForm(event, p) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const pwd = formData.get('P');
-        const content = formData.get('c');
-
-        if (pwd === P) {
-          if (content) {
-            localStorage.setItem(`${p}.w`, content);
-            location.search = `?${p}`;
-          } else {
-            localStorage.removeItem(`${p}.w`);
-            location.search = '?home';
-          }
+                const fileList = document.getElementById('file-list');
+                data.forEach(file => {
+                    if (file.type === 'file' && file.name.endsWith('.md')) {
+                        const listItem = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.href = file.html_url;
+                        link.textContent = file.name;
+                        listItem.appendChild(link);
+                        fileList.appendChild(listItem);
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching the markdown files:', error);
+            }
         }
-      }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const eParam = urlParams.get('e');
-        let p = urlParams.toString().replace(/(e|b)=(.*)/, '') || "home";
-        p = eParam || decodeURIComponent(p);
-
-        const f = `${p}.w`;
-
-        document.title = `${p} | ${N}`;
-        document.body.innerHTML = `<p><b>${p}</b> | <a href="./">${N}</a></p>`;
-
-        if (urlParams.get('P') === P) {
-          const content = localStorage.getItem(f);
-          if (content !== null) {
-            document.body.innerHTML += `<a style='float:right' href="?e=${p}" accesskey=e>edit</a></p>\n${r(content)}<hr>`;
-          } else {
-            e(p);
-          }
-        } else if (!eParam) {
-          const content = localStorage.getItem(f);
-          if (content !== null) {
-            document.body.innerHTML += `<a style='float:right' href="?e=${p}" accesskey=e>edit</a></p>\n${r(content)}<hr>`;
-          } else {
-            e(p);
-          }
-        } else {
-          e(eParam);
-        }
-      });
+        fetchMarkdownFiles();
     </script>
-  </head>
-  <body></body>
+</body>
 </html>
