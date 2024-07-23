@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Alpenhutten</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="description" content="Alpenhutten" />
+    <meta property="og:site_name" content="Alpenhutten" />
+    <meta property="og:title" content="Alpenhutten" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="Alpenhutten" />
+    <link href="https://fonts.googleapis.com/css2?display=swap&family=Sono:ital,wght@0,200;0,400;1,200;1,400&family=IBM+Plex+Mono:ital,wght@0,100;0,400;1,100;1,400&family=Roboto+Mono:ital,wght@0,100;0,400;1,100;1,400" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="is-loading">
+    <div id="wrapper">
+        <div id="main">
+            <div class="inner">
+                <header id="header">
+                    <h1 id="text01">❖</h1>
+                </header>
+                <section id="home-section">
+                    <p id="text04">Hier vind je een lijst van <mark><em>alle berghutten</em></mark> in de Alpen.</p>
+                    <p id="text04">
+                        <ul id="file-list"></ul>
+                        <div id="content"></div>
+                    </p>
+                    <script>
+                        async function fetchMarkdownFiles() {
+                            try {
+                                const response = await fetch('.');
+                                const text = await response.text();
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(text, 'text/html');
+                                const links = Array.from(doc.querySelectorAll('a'));
+
+                                const fileList = document.getElementById('file-list');
+                                links.forEach(link => {
+                                    const href = link.getAttribute('href');
+                                    if (href.endsWith('.md')) {
+                                        const listItem = document.createElement('li');
+                                        const linkElement = document.createElement('a');
+                                        linkElement.href = `?file=${href}`;
+                                        linkElement.textContent = href.replace('.md', '');
+                                        listItem.appendChild(linkElement);
+                                        fileList.appendChild(listItem);
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error fetching the markdown files:', error);
+                            }
+                        }
+
+                        async function fetchMarkdownContent(filePath) {
+                            try {
+                                const response = await fetch(filePath);
+                                const content = await response.text();
+                                displayContent(content);
+                            } catch (error) {
+                                console.error('Error fetching the markdown content:', error);
+                            }
+                        }
+
+                        function displayContent(content) {
+                            const contentDiv = document.getElementById('content');
+                            contentDiv.innerHTML = marked.parse(content);
+                        }
+
+                        function initialize() {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const filePath = urlParams.get('file');
+
+                            if (filePath) {
+                                document.getElementById('file-list').style.display = 'none';
+                                document.getElementById('text01').innerHTML = '<a href="./">Go back to Homepage</a>';
+                                fetchMarkdownContent(filePath);
+                            } else {
+                                fetchMarkdownFiles();
+                            }
+                        }
+
+                        initialize();
+                    </script>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
