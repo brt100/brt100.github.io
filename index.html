@@ -69,19 +69,25 @@
             background: #fdf5e6;
             padding: 1em;
         }
+        #newPageForm {
+            display: none;
+        }
+        #editor {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <h1><a href="./">kortverhaal</a></h1>
     <button onclick="showNewPageForm()">Add New Page</button>
     <ul id="pageList"></ul>
-    <div id="newPageForm" style="display: none;">
+    <div id="newPageForm">
         <input type="text" id="newPageName" placeholder="Enter new page name">
         <button onclick="createNewPage()">Create Page</button>
     </div>
     <p id="content"></p>
-    <a id="editLink" style="float:right" href="#" onclick="showEditor(); return false;">edit</a>
-    <div id="editor" style="display: none;">
+    <a id="editLink" href="#" onclick="showEditor(); return false;">edit</a>
+    <div id="editor">
         <label for="pageSelect">Edit Page:</label>
         <input type="text" id="pageSelect" placeholder="Enter page name" onchange="loadEditorContent()">
         <textarea id="editorContent" rows="25" placeholder="Syntax: #title, *i*, **b**, * or 1. list, > quote, [[page]], [name](url), ![img](url), --- line, !!! note."></textarea>
@@ -115,7 +121,7 @@
                 localStorage.setItem(pageToSave, editorContent);
                 savePageName(pageToSave);
                 location.hash = pageToSave;
-                location.reload();
+                loadPage(); // Reload the page content after saving
             } else {
                 alert('Incorrect password');
             }
@@ -162,6 +168,7 @@
             currentPage = hash ? decodeURIComponent(hash) : 'home';
             const content = localStorage.getItem(currentPage) || 'Welcome to your home page! Click edit to modify this content.';
             document.getElementById('content').innerHTML = parseMarkdown(content);
+            document.getElementById('content').style.display = 'block';
             displayPageList();
         }
 
@@ -179,10 +186,13 @@
         function hidePageList() {
             document.getElementById('pageList').style.display = 'none';
             document.getElementById('newPageForm').style.display = 'none';
+            document.getElementById('editor').style.display = 'none';
         }
 
         function showNewPageForm() {
             document.getElementById('newPageForm').style.display = 'block';
+            document.getElementById('editor').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
         }
 
         function createNewPage() {
@@ -191,7 +201,7 @@
                 localStorage.setItem(newPageName, '');
                 savePageName(newPageName);
                 location.hash = newPageName;
-                location.reload();
+                loadPage();
             } else {
                 alert('Page name is either empty or already exists.');
             }
