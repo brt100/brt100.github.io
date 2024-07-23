@@ -4,22 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="description" content="wittepeper"/>
-    <meta name="image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta name="theme-color" content="#000000"/>
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:site" content="wittepeper"/>
-    <meta name="twitter:title" content="wittepeper"/>
-    <meta name="twitter:description" content="wittepeper"/>
-    <meta name="twitter:image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:title" content="wittepeper"/>
-    <meta property="og:url" content="https://www.wittepeper.nl"/>
-    <meta property="og:image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta property="og:description" content="wittepeper"/>
-    <meta property="og:site_name" content="wittepeper"/>
-    <link rel="apple-touch-icon" sizes="16x16" href="/favicon/favicon-16x16.png"/>
-    <link rel="apple-touch-icon" sizes="32x32" href="/favicon/favicon-32x32.png"/>
-    <link rel="apple-touch-icon" sizes="192x192" href="/favicon/favicon-192x192.png"/>
     <link href="https://fonts.googleapis.com/css?display=swap&amp;family=PT+Serif:700,700italic" rel="stylesheet" type="text/css">
     <title>kortverhaal | Home</title>
     <style>
@@ -76,6 +60,8 @@
     <p id="content"></p>
     <a id="editLink" style="float:right" href="#" onclick="showEditor()">edit</a>
     <div id="editor" style="display: none;">
+        <label for="pageSelect">Edit Page:</label>
+        <input type="text" id="pageSelect" placeholder="Enter page name" onchange="loadEditorContent()">
         <textarea id="editorContent" rows="25" placeholder="Syntax: #title, *i*, **b**, * or 1. list, > quote, [[page]], [name](url), ![img](url), --- line, !!! note."></textarea>
         <br>
         <input type="password" id="password" placeholder="pwd">
@@ -87,17 +73,25 @@
 
         function showEditor() {
             document.getElementById('editor').style.display = 'block';
-            document.getElementById('editorContent').value = localStorage.getItem(currentPage) || '';
             document.getElementById('content').style.display = 'none';
+            document.getElementById('pageSelect').value = currentPage;
+            loadEditorContent();
+        }
+
+        function loadEditorContent() {
+            const pageToEdit = document.getElementById('pageSelect').value || 'home';
+            document.getElementById('editorContent').value = localStorage.getItem(pageToEdit) || '';
         }
 
         function saveContent() {
             const passwordInput = document.getElementById('password').value;
             const editorContent = document.getElementById('editorContent').value;
+            const pageToSave = document.getElementById('pageSelect').value || 'home';
 
             // Simulated password check
             if (passwordInput === 'password123') { // Replace with your password logic
-                localStorage.setItem(currentPage, editorContent);
+                localStorage.setItem(pageToSave, editorContent);
+                location.hash = pageToSave;
                 location.reload();
             } else {
                 alert('Incorrect password');
