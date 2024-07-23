@@ -83,10 +83,11 @@
     </div>
     <script>
         const PASSWORD_HASH = '2a15weKzeQC2XeWnnwxsBwe4ORvOoccoxJWzwLdk9OCs8O0EL09ZGa3W'; // Simulate hashed password
+        let currentPage = 'home'; // Default page
 
         function showEditor() {
             document.getElementById('editor').style.display = 'block';
-            document.getElementById('editorContent').value = localStorage.getItem('content') || '';
+            document.getElementById('editorContent').value = localStorage.getItem(currentPage) || '';
             document.getElementById('content').style.display = 'none';
         }
 
@@ -96,7 +97,7 @@
 
             // Simulated password check
             if (passwordInput === 'password123') { // Replace with your password logic
-                localStorage.setItem('content', editorContent);
+                localStorage.setItem(currentPage, editorContent);
                 location.reload();
             } else {
                 alert('Incorrect password');
@@ -110,7 +111,7 @@
                 { regex: /\n-{3,}/g, replacement: () => "<hr/>" },
                 { regex: /!\[([^\[]+)\]\(([^\)]+)\)/g, replacement: (match, p1, p2) => `<img src='${p2}' alt='${p1}'>` },
                 { regex: /\[([^\]]+)\]\(([^\)]+)\)/g, replacement: (match, p1, p2) => `<a href='${p2}'>${p1}</a>` },
-                { regex: /\[\[([^\]]+)\]\]/g, replacement: (match, p1) => `<a href='?${p1}'>${p1}</a>` },
+                { regex: /\[\[([^\]]+)\]\]/g, replacement: (match, p1) => `<a href='#${p1}'>${p1}</a>` },
                 { regex: /(\*\*)(.*?)\1/g, replacement: (match, p1, p2) => `<b>${p2}</b>` },
                 { regex: /\n\*(.*)/g, replacement: (match, p1) => `<ul>\n\t<li>${p1.trim()}</li>\n</ul>` },
                 { regex: /\n\-(.*)/g, replacement: (match, p1) => `<ul>\n\t<li>${p1.trim()}</li>\n</ul>` },
@@ -131,14 +132,22 @@
             return text.trim();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedContent = localStorage.getItem('content');
+        function loadPage() {
+            const hash = window.location.hash.substring(1);
+            currentPage = hash || 'home';
+            document.title = `kortverhaal | ${currentPage}`;
+            const savedContent = localStorage.getItem(currentPage);
             if (savedContent) {
                 document.getElementById('content').innerHTML = parseMarkdown(savedContent);
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('editor').style.display = 'none';
             } else {
                 showEditor();
             }
-        });
+        }
+
+        window.addEventListener('hashchange', loadPage);
+        document.addEventListener('DOMContentLoaded', loadPage);
     </script>
 </body>
 </html>
