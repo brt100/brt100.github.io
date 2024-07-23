@@ -2,212 +2,142 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="description" content="wittepeper"/>
-    <meta name="image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta name="theme-color" content="#000000"/>
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:site" content="wittepeper"/>
-    <meta name="twitter:title" content="wittepeper"/>
-    <meta name="twitter:description" content="wittepeper"/>
-    <meta name="twitter:image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:title" content="wittepeper"/>
-    <meta property="og:url" content="https://www.wittepeper.nl"/>
-    <meta property="og:image" content="https://wittepeper/favicon/sharecard.png"/>
-    <meta property="og:description" content="wittepeper"/>
-    <meta property="og:site_name" content="wittepeper"/>
-    <link rel="apple-touch-icon" sizes="16x16" href="/favicon/favicon-16x16.png"/>
-    <link rel="apple-touch-icon" sizes="32x32" href="/favicon/favicon-32x32.png"/>
-    <link rel="apple-touch-icon" sizes="192x192" href="/favicon/favicon-192x192.png"/>
-    <link href="https://fonts.googleapis.com/css?display=swap&amp;family=PT+Serif:700,700italic" rel="stylesheet" type="text/css">
-    <title>kortverhaal | Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Editor</title>
     <style>
         body {
-            background-color: #F3EFE4;
-            color: #575757;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            line-height: 2;
-            font-weight: 400;
-            max-width: 34em;
-            margin: 0 auto;
-            padding: 0 1em;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 1em;
+            background-color: #f4f4f4;
         }
         h1 {
-            color: #575757;
-            font-family: 'PT Serif';
-            font-size: 2.25em;
-            line-height: 2;
-            font-weight: 700;
+            font-size: 2em;
+            color: #333;
+        }
+        button {
+            margin-bottom: 1em;
         }
         textarea {
             width: 100%;
-            font: 1em "PT Serif";
         }
-        h1 a {
-            color: #575757;
-            text-decoration: none;
+        #content, #editor, #newPageForm {
+            margin-top: 1em;
         }
-        a {
-            color: #575757;
-        }
-        p {
-            color: #575757;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            line-height: 2;
-            font-weight: 400;
-        }
-        blockquote {
-            font-family: monospace;
-            background: #EEE;
-            margin: 0;
-            padding: 1px 1em;
-        }
-        div#v {
-            background: #fdf5e6;
+        #content {
             padding: 1em;
-        }
-        #newPageForm {
-            display: none;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
         #editor {
-            display: none;
+            padding: 1em;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #pageList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #pageList li {
+            margin: 0.5em 0;
         }
     </style>
 </head>
 <body>
-    <h1><a href="./">kortverhaal</a></h1>
+    <h1>Page Editor</h1>
     <button onclick="showNewPageForm()">Add New Page</button>
+    <div id="newPageForm" style="display: none;">
+        <form onsubmit="createNewPage(); return false;">
+            <input type="text" id="newPageName" placeholder="Enter new page name" required>
+            <button type="submit">Create Page</button>
+        </form>
+    </div>
     <ul id="pageList"></ul>
-    <div id="newPageForm">
-        <input type="text" id="newPageName" placeholder="Enter new page name">
-        <button onclick="createNewPage()">Create Page</button>
+    <div id="editor" style="display: none;">
+        <form onsubmit="saveContent(); return false;">
+            <label for="pageSelect">Edit Page:</label>
+            <input type="text" id="pageSelect" placeholder="Enter page name" onchange="loadEditorContent()" required>
+            <textarea id="editorContent" rows="10" placeholder="Enter page content here" required></textarea>
+            <br>
+            <button type="submit">Save</button>
+        </form>
     </div>
-    <p id="content"></p>
-    <a id="editLink" href="#" onclick="showEditor(); return false;">edit</a>
-    <div id="editor">
-        <label for="pageSelect">Edit Page:</label>
-        <input type="text" id="pageSelect" placeholder="Enter page name" onchange="loadEditorContent()">
-        <textarea id="editorContent" rows="25" placeholder="Syntax: #title, *i*, **b**, * or 1. list, > quote, [[page]], [name](url), ![img](url), --- line, !!! note."></textarea>
-        <br>
-        <input type="password" id="password" placeholder="pwd">
-        <input type="submit" value="save" onclick="saveContent()">
-    </div>
+    <div id="content"></div>
     <script>
-        const PASSWORD_HASH = '2a15weKzeQC2XeWnnwxsBwe4ORvOoccoxJWzwLdk9OCs8O0EL09ZGa3W'; // Simulate hashed password
         let currentPage = 'home'; // Default page
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPageList();
+            showPage(currentPage); // Load default or current page
+        });
+
+        function showNewPageForm() {
+            document.getElementById('newPageForm').style.display = 'block';
+            document.getElementById('editor').style.display = 'none';
+            document.getElementById('content').style.display = 'none';
+        }
+
+        function createNewPage() {
+            const newPageName = document.getElementById('newPageName').value.trim();
+            if (newPageName) {
+                const pages = JSON.parse(localStorage.getItem('pages')) || [];
+                if (!pages.includes(newPageName)) {
+                    pages.push(newPageName);
+                    localStorage.setItem('pages', JSON.stringify(pages));
+                    localStorage.setItem(newPageName, ''); // Initialize page content
+                    loadPageList();
+                    document.getElementById('newPageName').value = '';
+                    document.getElementById('newPageForm').style.display = 'none';
+                    showPage(newPageName); // Automatically display new page
+                } else {
+                    alert('Page already exists.');
+                }
+            }
+        }
+
+        function loadPageList() {
+            const pages = JSON.parse(localStorage.getItem('pages')) || [];
+            const pageList = document.getElementById('pageList');
+            pageList.innerHTML = '';
+
+            pages.forEach(page => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="#" onclick="showPage('${page}'); return false;">${page}</a>`;
+                pageList.appendChild(li);
+            });
+        }
+
+        function showPage(page) {
+            currentPage = page;
+            const content = localStorage.getItem(page) || 'Page content goes here.';
+            document.getElementById('content').innerHTML = content;
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('editor').style.display = 'none';
+            document.getElementById('newPageForm').style.display = 'none';
+        }
 
         function showEditor() {
             document.getElementById('editor').style.display = 'block';
             document.getElementById('content').style.display = 'none';
+            document.getElementById('newPageForm').style.display = 'none';
             document.getElementById('pageSelect').value = currentPage;
             loadEditorContent();
         }
 
         function loadEditorContent() {
-            const pageToEdit = document.getElementById('pageSelect').value || currentPage;
-            document.getElementById('editorContent').value = localStorage.getItem(pageToEdit) || '';
+            const pageToEdit = document.getElementById('pageSelect').value;
+            const content = localStorage.getItem(pageToEdit) || '';
+            document.getElementById('editorContent').value = content;
         }
 
         function saveContent() {
-            const passwordInput = document.getElementById('password').value;
-            const editorContent = document.getElementById('editorContent').value;
-            const pageToSave = document.getElementById('pageSelect').value || currentPage;
-
-            // Simulated password check
-            if (passwordInput === 'password123') { // Replace with your password logic
-                localStorage.setItem(pageToSave, editorContent);
-                savePageName(pageToSave);
-                location.hash = pageToSave;
-                loadPage(); // Reload the page content after saving
-            } else {
-                alert('Incorrect password');
-            }
+            const pageToSave = document.getElementById('pageSelect').value;
+            const content = document.getElementById('editorContent').value;
+            localStorage.setItem(pageToSave, content);
+            showPage(pageToSave);
         }
-
-        function savePageName(pageName) {
-            let pages = JSON.parse(localStorage.getItem('pages')) || [];
-            if (!pages.includes(pageName)) {
-                pages.push(pageName);
-                localStorage.setItem('pages', JSON.stringify(pages));
-            }
-        }
-
-        function parseMarkdown(text) {
-            text = "\n" + text + "\n";
-            const rules = [
-                { regex: /\n(#+)(.*)/g, replacement: (match, p1, p2) => `<h${p1.length}>${p2.trim()}</h${p1.length}>` },
-                { regex: /\n-{3,}/g, replacement: () => "<hr/>" },
-                { regex: /!\[([^\[]+)\]\(([^\)]+)\)/g, replacement: (match, p1, p2) => `<img src='${p2}' alt='${p1}'>` },
-                { regex: /\[([^\]]+)\]\(([^\)]+)\)/g, replacement: (match, p1, p2) => `<a href='${p2}'>${p1}</a>` },
-                { regex: /\[\[([^\]]+)\]\]/g, replacement: (match, p1) => `<a href='#${p1}'>${p1}</a>` },
-                { regex: /(\*\*)(.*?)\1/g, replacement: (match, p1, p2) => `<b>${p2}</b>` },
-                { regex: /\n\*(.*)/g, replacement: (match, p1) => `<ul>\n\t<li>${p1.trim()}</li>\n</ul>` },
-                { regex: /\n\-(.*)/g, replacement: (match, p1) => `<ul>\n\t<li>${p1.trim()}</li>\n</ul>` },
-                { regex: /\n[0-9]+\.(.*)/g, replacement: (match, p1) => `<ol>\n\t<li>${p1.trim()}</li>\n</ol>` },
-                { regex: /(\*)(.*?)\1/g, replacement: (match, p1, p2) => `<i>${p2}</i>` },
-                { regex: /\n(&gt;|\>)(.*)/g, replacement: (match, p1, p2) => `<blockquote>${p2.trim()}</blockquote>` },
-                { regex: /\n(&gt;|\!!!)(.*)/g, replacement: (match, p1, p2) => `<div id=v>${p2.trim()}</div>` },
-                { regex: /\n([^\n]+)\n/g, replacement: (match, p1) => `<p>${p1.trim()}</p>` },
-                { regex: /<\/ul>\s?<ul>/g, replacement: '' },
-                { regex: /<\/ol>\s?<ol>/g, replacement: '' },
-                { regex: /<\/blockquote><blockquote>/g, replacement: '<br>' }
-            ];
-
-            rules.forEach(rule => {
-                text = text.replace(rule.regex, rule.replacement);
-            });
-
-            return text.trim();
-        }
-
-        function loadPage() {
-            const hash = location.hash.substring(1);
-            currentPage = hash ? decodeURIComponent(hash) : 'home';
-            const content = localStorage.getItem(currentPage) || 'Welcome to your home page! Click edit to modify this content.';
-            document.getElementById('content').innerHTML = parseMarkdown(content);
-            document.getElementById('content').style.display = 'block';
-            displayPageList();
-        }
-
-        function displayPageList() {
-            const pages = JSON.parse(localStorage.getItem('pages')) || [];
-            const pageList = document.getElementById('pageList');
-            pageList.innerHTML = '';
-            pages.forEach(page => {
-                const li = document.createElement('li');
-                li.innerHTML = `<a href="#${page}" onclick="hidePageList()">${page}</a>`;
-                pageList.appendChild(li);
-            });
-        }
-
-        function hidePageList() {
-            document.getElementById('pageList').style.display = 'none';
-            document.getElementById('newPageForm').style.display = 'none';
-            document.getElementById('editor').style.display = 'none';
-        }
-
-        function showNewPageForm() {
-            document.getElementById('newPageForm').style.display = 'block';
-            document.getElementById('editor').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-        }
-
-        function createNewPage() {
-            const newPageName = document.getElementById('newPageName').value.trim();
-            if (newPageName && !localStorage.getItem(newPageName)) {
-                localStorage.setItem(newPageName, '');
-                savePageName(newPageName);
-                location.hash = newPageName;
-                loadPage();
-            } else {
-                alert('Page name is either empty or already exists.');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadPage);
     </script>
 </body>
 </html>
