@@ -80,7 +80,7 @@
         <button onclick="createNewPage()">Create Page</button>
     </div>
     <p id="content"></p>
-    <a id="editLink" style="float:right" href="#" onclick="showEditor()">edit</a>
+    <a id="editLink" style="float:right" href="#" onclick="showEditor(); return false;">edit</a>
     <div id="editor" style="display: none;">
         <label for="pageSelect">Edit Page:</label>
         <input type="text" id="pageSelect" placeholder="Enter page name" onchange="loadEditorContent()">
@@ -101,14 +101,14 @@
         }
 
         function loadEditorContent() {
-            const pageToEdit = document.getElementById('pageSelect').value || 'home';
+            const pageToEdit = document.getElementById('pageSelect').value || currentPage;
             document.getElementById('editorContent').value = localStorage.getItem(pageToEdit) || '';
         }
 
         function saveContent() {
             const passwordInput = document.getElementById('password').value;
             const editorContent = document.getElementById('editorContent').value;
-            const pageToSave = document.getElementById('pageSelect').value || 'home';
+            const pageToSave = document.getElementById('pageSelect').value || currentPage;
 
             // Simulated password check
             if (passwordInput === 'password123') { // Replace with your password logic
@@ -171,9 +171,14 @@
             pageList.innerHTML = '';
             pages.forEach(page => {
                 const li = document.createElement('li');
-                li.innerHTML = `<a href="#${page}">${page}</a>`;
+                li.innerHTML = `<a href="#${page}" onclick="hidePageList()">${page}</a>`;
                 pageList.appendChild(li);
             });
+        }
+
+        function hidePageList() {
+            document.getElementById('pageList').style.display = 'none';
+            document.getElementById('newPageForm').style.display = 'none';
         }
 
         function showNewPageForm() {
